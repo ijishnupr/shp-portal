@@ -1,0 +1,7 @@
+Django>=5.0
+mysqlclient
+python-dotenv
+django-crispy-forms
+crispy-bootstrap5
+django-storages
+boto3

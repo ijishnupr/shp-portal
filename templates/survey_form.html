@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">New Site Survey Entry</h4>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <h5 class="text-primary mt-2 border-bottom pb-2">Section 1: Site Information</h5>
+                    <div class="row">
+                        <div class="col-md-6">{{ form.site_name|as_crispy_field }}</div>
+                        <div class="col-md-6">{{ form.site_type|as_crispy_field }}</div>
+                        <div class="col-md-6">{{ form.district|as_crispy_field }}</div>
+                        <div class="col-md-6">{{ form.state|as_crispy_field }}</div>
+                        <div class="col-12">{{ form.river_stream_name|as_crispy_field }}</div>
+                    </div>
+
+                    <h5 class="text-primary mt-4 border-bottom pb-2">Section 2: Hydrological Data</h5>
+                    <div class="row">
+                        <div class="col-md-6">{{ form.installed_capacity_mw|as_crispy_field }}</div>
+                        <div class="col-md-6">{{ form.type_of_turbine|as_crispy_field }}</div>
+                        <div class="col-md-6">{{ form.avg_annual_rainfall_mm|as_crispy_field }}</div>
+                        <div class="col-md-6">{{ form.avg_discharge|as_crispy_field }}</div>
+                    </div>
+
+                    <h5 class="text-primary mt-4 border-bottom pb-2">Section 3: Technical Data</h5>
+                    <div class="row">
+                        <div class="col-md-6">{{ form.generator_capacity_mw|as_crispy_field }}</div>
+                        <div class="col-md-6">{{ form.annual_energy_production|as_crispy_field }}</div>
+                    </div>
+
+                    <h5 class="text-primary mt-4 border-bottom pb-2">Section 4: Status</h5>
+                    <div class="row">
+                        <div class="col-md-6">{{ form.current_status|as_crispy_field }}</div>
+                        <div class="col-md-6">{{ form.is_rejected|as_crispy_field }}</div>
+                        <div class="col-12">{{ form.reason_for_rejection|as_crispy_field }}</div>
+                    </div>
+
+                    <h5 class="text-primary mt-4 border-bottom pb-2">Section 5: Documents</h5>
+                    <div class="alert alert-info small">Upload PDF reports here. Files will be stored securely and linked to this record.</div>
+                    {{ form.fr_report|as_crispy_field }}
+                    {{ form.special_study_report|as_crispy_field }}
+                    {{ form.env_clearance_doc|as_crispy_field }}
+
+                    <div class="mt-4 d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">Submit Survey Data</button>
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
