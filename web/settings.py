@@ -80,14 +80,28 @@ WSGI_APPLICATION = 'web.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': os.getenv('DB_NAME'),
+#         'USER': os.getenv('DB_USER'),
+#         'PASSWORD': os.getenv('DB_PASSWORD'),
+#         'HOST': os.getenv('DB_HOST'),
+#         'PORT': os.getenv('DB_PORT'),
+#     }
+# }
+
+
+# Database
+# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('DB_NAME'),
-        'USER': os.getenv('DB_USER'),
-        'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST'),
-        'PORT': os.getenv('DB_PORT'),
+    "default": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": "jishnuregal$shp_db",
+        "USER": "jishnuregal",
+        "PASSWORD": "achusachu",
+        "HOST": "jishnuregal.mysql.pythonanywhere-services.com",
+        "PORT": "3306",
     }
 }
 
@@ -127,12 +141,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
-
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
 # Media / File Uploads Configuration
 # If AWS keys are present in .env, use S3, otherwise use local storage
 if os.getenv('AWS_ACCESS_KEY_ID'):
@@ -145,15 +156,10 @@ if os.getenv('AWS_ACCESS_KEY_ID'):
 else:
     MEDIA_URL = '/media/'
     MEDIA_ROOT = BASE_DIR / 'media'
-
 # Form Styling
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
-
-
-
 # shp_project/settings.py
-
 LOGIN_URL = 'login'           # Where to go if not logged in
 LOGIN_REDIRECT_URL = 'dashboard' # Where to go after login
 LOGOUT_REDIRECT_URL = 'login' # Where to go after logout
