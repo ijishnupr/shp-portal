@@ -2,58 +2,212 @@
 {% load crispy_forms_tags %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-lg-8">
-        <div class="card shadow">
-            <div class="card-header bg-primary text-white">
-                <h4 class="mb-0">New Site Survey Entry</h4>
+<div class="container mt-4 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            
+            <!-- Page Header -->
+            <div class="mb-4">
+                <h2 class="fw-bold">
+                    {% if is_edit %}
+                        <i class="bi bi-pencil-square text-primary"></i> Edit Survey: {{ form.instance.stream_name }}
+                    {% else %}
+                        <i class="bi bi-plus-circle text-success"></i> New Reconnaissance Survey
+                    {% endif %}
+                </h2>
+                <p class="text-muted">Fill in the technical details below. Sections marked with * are mandatory.</p>
             </div>
-            <div class="card-body">
-                <form method="post" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    
-                    <h5 class="text-primary mt-2 border-bottom pb-2">Section 1: Site Information</h5>
-                    <div class="row">
-                        <div class="col-md-6">{{ form.site_name|as_crispy_field }}</div>
-                        <div class="col-md-6">{{ form.site_type|as_crispy_field }}</div>
-                        <div class="col-md-6">{{ form.district|as_crispy_field }}</div>
-                        <div class="col-md-6">{{ form.state|as_crispy_field }}</div>
-                        <div class="col-12">{{ form.river_stream_name|as_crispy_field }}</div>
-                    </div>
 
-                    <h5 class="text-primary mt-4 border-bottom pb-2">Section 2: Hydrological Data</h5>
-                    <div class="row">
-                        <div class="col-md-6">{{ form.installed_capacity_mw|as_crispy_field }}</div>
-                        <div class="col-md-6">{{ form.type_of_turbine|as_crispy_field }}</div>
-                        <div class="col-md-6">{{ form.avg_annual_rainfall_mm|as_crispy_field }}</div>
-                        <div class="col-md-6">{{ form.avg_discharge|as_crispy_field }}</div>
+            <!-- Data Governance Statement -->
+            <div class="alert alert-warning border-start border-4 border-warning shadow-sm mb-4">
+                <div class="d-flex">
+                    <i class="bi bi-shield-lock-fill fs-3 me-3"></i>
+                    <div>
+                        <h6 class="alert-heading fw-bold">Data Governance Statement</h6>
+                        <p class="mb-0 small">
+                            “This survey is part of an academic-cum-technical reconnaissance programme coordinated by EMC. 
+                            Data collected is for preliminary assessment only and does not imply project approval.”
+                        </p>
                     </div>
-
-                    <h5 class="text-primary mt-4 border-bottom pb-2">Section 3: Technical Data</h5>
-                    <div class="row">
-                        <div class="col-md-6">{{ form.generator_capacity_mw|as_crispy_field }}</div>
-                        <div class="col-md-6">{{ form.annual_energy_production|as_crispy_field }}</div>
-                    </div>
-
-                    <h5 class="text-primary mt-4 border-bottom pb-2">Section 4: Status</h5>
-                    <div class="row">
-                        <div class="col-md-6">{{ form.current_status|as_crispy_field }}</div>
-                        <div class="col-md-6">{{ form.is_rejected|as_crispy_field }}</div>
-                        <div class="col-12">{{ form.reason_for_rejection|as_crispy_field }}</div>
-                    </div>
-
-                    <h5 class="text-primary mt-4 border-bottom pb-2">Section 5: Documents</h5>
-                    <div class="alert alert-info small">Upload PDF reports here. Files will be stored securely and linked to this record.</div>
-                    {{ form.fr_report|as_crispy_field }}
-                    {{ form.special_study_report|as_crispy_field }}
-                    {{ form.env_clearance_doc|as_crispy_field }}
-
-                    <div class="mt-4 d-grid gap-2">
-                        <button type="submit" class="btn btn-primary btn-lg">Submit Survey Data</button>
-                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">Cancel</a>
-                    </div>
-                </form>
+                </div>
             </div>
+
+            <!-- FORM START -->
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <!-- Section 0 -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-dark text-white fw-bold">Section 0: Administrative Metadata</div>
+                    <div class="card-body row">
+                        <div class="col-md-3">{{ form.student_team_id|as_crispy_field }}</div>
+                        <div class="col-md-3">{{ form.pmt_name|as_crispy_field }}</div>
+                        <div class="col-md-3">{{ form.district|as_crispy_field }}</div>
+                        <div class="col-md-3">{{ form.river_basin|as_crispy_field }}</div>
+                    </div>
+                </div>
+
+                <!-- Section 1 -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white fw-bold">Section 1: Site Identification</div>
+                    <div class="card-body row">
+                        <div class="col-md-4">{{ form.proposed_site_code|as_crispy_field }}</div>
+                        <div class="col-md-8">{{ form.local_site_name|as_crispy_field }}</div>
+                        <div class="col-md-4">{{ form.stream_name|as_crispy_field }}</div>
+                        <div class="col-md-4">{{ form.village_panchayat|as_crispy_field }}</div>
+                        <div class="col-md-4">{{ form.nearest_landmark|as_crispy_field }}</div>
+                    </div>
+                </div>
+
+                <!-- Section 2 -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white fw-bold">Section 2: GPS Location</div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 border-end">
+                                <h6 class="text-primary border-bottom pb-2">Intake</h6>
+                                <div class="row">
+                                    <div class="col-6">{{ form.intake_latitude|as_crispy_field }}</div>
+                                    <div class="col-6">{{ form.intake_longitude|as_crispy_field }}</div>
+                                    <div class="col-12">{{ form.intake_elevation_m|as_crispy_field }}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-primary border-bottom pb-2">Powerhouse</h6>
+                                <div class="row">
+                                    <div class="col-6">{{ form.powerhouse_latitude|as_crispy_field }}</div>
+                                    <div class="col-6">{{ form.powerhouse_longitude|as_crispy_field }}</div>
+                                    <div class="col-12">{{ form.powerhouse_elevation_m|as_crispy_field }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <!-- Section 3 -->
+                    <div class="col-md-6">
+                        <div class="card shadow-sm mb-4 h-100">
+                            <div class="card-header bg-secondary text-white fw-bold">Section 3: Access</div>
+                            <div class="card-body">
+                                {{ form.access_type|as_crispy_field }}
+                                {{ form.distance_from_road_km|as_crispy_field }}
+                                {{ form.seasonal_access_constraints|as_crispy_field }}
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Section 4 -->
+                    <div class="col-md-6">
+                        <div class="card shadow-sm mb-4 h-100">
+                            <div class="card-header bg-info text-white fw-bold">Section 4: Stream & Flow</div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-6">{{ form.flow_type|as_crispy_field }}</div>
+                                    <div class="col-6">{{ form.observed_flow_condition|as_crispy_field }}</div>
+                                </div>
+                                {{ form.qualitative_flow_desc|as_crispy_field }}
+                                {{ form.diversions_upstream|as_crispy_field }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 5 -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-info text-white fw-bold">Section 5: Head & Discharge</div>
+                    <div class="card-body row">
+                        <div class="col-md-6 border-end">
+                            <h6 class="text-muted text-uppercase small fw-bold">Gross Head</h6>
+                            {{ form.measured_head_m|as_crispy_field }}
+                            {{ form.dem_assisted_head_m|as_crispy_field }}
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted text-uppercase small fw-bold">Discharge</h6>
+                            {{ form.discharge_measured|as_crispy_field }}
+                            <div class="row">
+                                <div class="col-6">{{ form.measured_discharge_lps|as_crispy_field }}</div>
+                                <div class="col-6">{{ form.measurement_method|as_crispy_field }}</div>
+                            </div>
+                            {{ form.season_of_measurement|as_crispy_field }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 6 & 7 -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-success text-white fw-bold">Section 6 & 7: Legal, Env & Social</div>
+                    <div class="card-body row">
+                        <div class="col-md-6 border-end">
+                            {{ form.land_ownership|as_crispy_field }}
+                            {{ form.forest_boundary_within_500m|as_crispy_field }}
+                            {{ form.known_clearances_needed|as_crispy_field }}
+                        </div>
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-4">{{ form.nearby_wildlife|as_crispy_field }}</div>
+                                <div class="col-4">{{ form.waterfall_within_500m|as_crispy_field }}</div>
+                                <div class="col-4">{{ form.tribal_settlement_nearby|as_crispy_field }}</div>
+                            </div>
+                            {{ form.existing_water_uses|as_crispy_field }}
+                            {{ form.social_sensitivities|as_crispy_field }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 8, 9, 10 -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-warning text-dark fw-bold">Technical: Grid & Potential</div>
+                    <div class="card-body row">
+                        <div class="col-md-4 border-end">
+                            <h6 class="text-muted text-uppercase small fw-bold">Sec 8: Connectivity</h6>
+                            {{ form.nearest_kseb_line_km|as_crispy_field }}
+                            {{ form.voltage_level|as_crispy_field }}
+                            {{ form.nearest_substation|as_crispy_field }}
+                        </div>
+                        <div class="col-md-4 border-end">
+                            <h6 class="text-muted text-uppercase small fw-bold">Sec 9: Power Potential</h6>
+                            {{ form.indicative_capacity_kw|as_crispy_field }}
+                            {{ form.basis_of_estimate|as_crispy_field }}
+                            {{ form.tentative_plf|as_crispy_field }}
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="text-muted text-uppercase small fw-bold">Sec 10: Hydrology</h6>
+                            {{ form.nearby_gauge_station|as_crispy_field }}
+                            {{ form.correlation_method|as_crispy_field }}
+                            {{ form.confidence_level|as_crispy_field }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 11: Photos -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-dark text-white fw-bold">Section 11: Photographic Documentation</div>
+                    <div class="card-body row">
+                        <div class="alert alert-info small py-2"><i class="bi bi-info-circle"></i> Uploading Geotagged photos is mandatory.</div>
+                        <div class="col-md-6">{{ form.photo_intake|as_crispy_field }}</div>
+                        <div class="col-md-6">{{ form.photo_powerhouse|as_crispy_field }}</div>
+                        <div class="col-md-6">{{ form.photo_upstream|as_crispy_field }}</div>
+                        <div class="col-md-6">{{ form.photo_access|as_crispy_field }}</div>
+                    </div>
+                </div>
+
+                <!-- Section 12: Assessment -->
+                <div class="card shadow-sm mb-4 border-primary border-2">
+                    <div class="card-header bg-primary text-white fw-bold">Section 12: Overall Assessment</div>
+                    <div class="card-body">
+                        {{ form.overall_feasibility|as_crispy_field }}
+                        {{ form.key_constraints|as_crispy_field }}
+                        {{ form.recommend_tier_1|as_crispy_field }}
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2 mb-5 d-md-flex justify-content-md-end">
+                    <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary btn-lg px-4">Cancel</a>
+                    <button type="submit" class="btn btn-success btn-lg fw-bold px-5 shadow">
+                        {% if is_edit %}Update Survey Data{% else %}Submit Survey{% endif %}
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

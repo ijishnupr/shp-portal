@@ -1,0 +1,392 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    /* --- CUSTOM STYLES FOR DETAIL PAGE --- */
+    .detail-header {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        margin-bottom: 2rem;
+        border-bottom: 4px solid #0d6efd;
+    }
+
+    /* Highlight Cards at the top */
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+        border: 1px solid #f0f0f0;
+        transition: transform 0.2s;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    .stat-card:hover { transform: translateY(-3px); }
+    .stat-icon {
+        width: 50px; height: 50px;
+        border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    /* Section Headers */
+    .section-title {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-weight: 700;
+        color: #6c757d;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .section-title::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: #e9ecef;
+    }
+
+    /* Data Points */
+    .data-label { color: #888; font-size: 0.9rem; display: block; margin-bottom: 2px; }
+    .data-value { color: #212529; font-weight: 600; font-size: 1rem; }
+
+    /* Gallery */
+    .gallery-img-wrapper {
+        position: relative;
+        overflow: hidden;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        aspect-ratio: 4/3; /* Enforce shape */
+        background: #f8f9fa;
+    }
+    .gallery-img {
+        width: 100%; height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .gallery-img-wrapper:hover .gallery-img { transform: scale(1.1); }
+    .img-caption {
+        position: absolute; bottom: 0; left: 0; right: 0;
+        background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+        color: white; padding: 20px 15px 10px 15px;
+        font-size: 0.85rem; font-weight: 500;
+    }
+
+    /* Print settings */
+    @media print {
+        .no-print { display: none !important; }
+        .detail-header { border: 1px solid #ccc; box-shadow: none; }
+        body { background: white; }
+    }
+</style>
+
+<div class="container pb-5">
+
+    <!-- 1. HEADER & ACTIONS -->
+    <div class="d-flex justify-content-between align-items-center mb-4 pt-3">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}" class="text-decoration-none">Dashboard</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ survey.student_team_id }}</li>
+            </ol>
+        </nav>
+        <div class="no-print gap-2 d-flex">
+            <button onclick="window.print()" class="btn btn-outline-dark btn-sm shadow-sm">
+                <i class="bi bi-printer me-1"></i> Print Report
+            </button>
+            
+            <!-- SECURE EDIT BUTTON: Only visible to Owner or Superuser -->
+            {% if survey.submitted_by == user or user.is_superuser %}
+            <a href="{% url 'edit_survey' survey.pk %}" class="btn btn-primary btn-sm shadow-sm">
+                <i class="bi bi-pencil me-1"></i> Edit Data
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 2. HERO HEADER -->
+    <div class="detail-header d-flex flex-wrap justify-content-between align-items-center">
+        <div>
+            <h5 class="text-primary fw-bold text-uppercase mb-1">
+                <i class="bi bi-geo-alt-fill me-2"></i>{{ survey.district }} District
+            </h5>
+            <h1 class="fw-bold display-6 mb-1">{{ survey.stream_name }} Hydro Project</h1>
+            <p class="text-muted mb-0">
+                Site Code: <span class="fw-mono text-dark">{{ survey.proposed_site_code|default:"N/A" }}</span> | 
+                Basin: <span class="text-dark">{{ survey.river_basin }}</span>
+            </p>
+        </div>
+        <div class="text-end mt-3 mt-md-0">
+            <span class="d-block text-muted small mb-1">Overall Feasibility</span>
+            <span class="badge rounded-pill px-3 py-2 fs-6 
+                {% if survey.overall_feasibility == 'Promising' %}bg-success
+                {% elif survey.overall_feasibility == 'Uncertain' %}bg-warning text-dark
+                {% else %}bg-danger{% endif %}">
+                {{ survey.overall_feasibility }}
+            </span>
+        </div>
+    </div>
+
+    <!-- 3. KEY STATS ROW -->
+    <div class="row g-4 mb-5">
+        <!-- Capacity -->
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="stat-icon bg-primary bg-opacity-10 text-primary">
+                    <i class="bi bi-lightning-charge-fill"></i>
+                </div>
+                <div>
+                    <span class="text-muted small text-uppercase">Potential Capacity</span>
+                    <h3 class="fw-bold mb-0">{{ survey.indicative_capacity_kw }} <span class="fs-6 text-muted">kW</span></h3>
+                </div>
+            </div>
+        </div>
+        <!-- Head -->
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="stat-icon bg-info bg-opacity-10 text-info">
+                    <i class="bi bi-arrow-down-up"></i>
+                </div>
+                <div>
+                    <span class="text-muted small text-uppercase">Gross Head</span>
+                    <h3 class="fw-bold mb-0">{{ survey.measured_head_m }} <span class="fs-6 text-muted">m</span></h3>
+                </div>
+            </div>
+        </div>
+        <!-- Discharge -->
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="stat-icon bg-success bg-opacity-10 text-success">
+                    <i class="bi bi-droplet-half"></i>
+                </div>
+                <div>
+                    <span class="text-muted small text-uppercase">Discharge</span>
+                    <h3 class="fw-bold mb-0">{{ survey.measured_discharge_lps|default:"--" }} <span class="fs-6 text-muted">lps</span></h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- LEFT COLUMN: MAIN TECH SPECS -->
+        <div class="col-lg-8">
+            
+            <!-- A. Site Information -->
+            <div class="mb-5">
+                <div class="section-title"><i class="bi bi-pin-map"></i> Site Details</div>
+                <div class="card border-0 shadow-sm p-4">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <span class="data-label">Local Site Name</span>
+                            <span class="data-value">{{ survey.local_site_name|default:"Not specified" }}</span>
+                        </div>
+                        <div class="col-md-6">
+                            <span class="data-label">Village / Panchayat</span>
+                            <span class="data-value">{{ survey.village_panchayat }}</span>
+                        </div>
+                        <div class="col-md-6">
+                            <span class="data-label">Intake GPS</span>
+                            <span class="data-value font-monospace text-primary">
+                                <i class="bi bi-crosshair me-1"></i>{{ survey.intake_latitude }}, {{ survey.intake_longitude }}
+                            </span>
+                            <div class="small text-muted">Elevation: {{ survey.intake_elevation_m }}m</div>
+                        </div>
+                        <div class="col-md-6">
+                            <span class="data-label">Powerhouse GPS</span>
+                            <span class="data-value font-monospace text-primary">
+                                <i class="bi bi-crosshair me-1"></i>{{ survey.powerhouse_latitude }}, {{ survey.powerhouse_longitude }}
+                            </span>
+                            <div class="small text-muted">Elevation: {{ survey.powerhouse_elevation_m|default:"N/A" }}m</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- B. Hydrology & Tech -->
+            <div class="mb-5">
+                <div class="section-title"><i class="bi bi-moisture"></i> Hydrology & Environment</div>
+                <div class="card border-0 shadow-sm p-4">
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <span class="data-label">Flow Type</span>
+                            <span class="data-value">{{ survey.flow_type }}</span>
+                        </div>
+                        <div class="col-md-4">
+                            <span class="data-label">Observed Condition</span>
+                            <span class="data-value">{{ survey.observed_flow_condition }}</span>
+                        </div>
+                        <div class="col-md-4">
+                            <span class="data-label">Access Type</span>
+                            <span class="data-value">{{ survey.access_type }}</span>
+                        </div>
+                        <div class="col-12">
+                            <span class="data-label">Qualitative Flow Description</span>
+                            <p class="text-dark bg-light p-3 rounded mt-1 mb-0">{{ survey.qualitative_flow_desc }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <span class="data-label">Nearby Wildlife?</span>
+                            <span class="data-value">{% if survey.nearby_wildlife %}Yes{% else %}No{% endif %}</span>
+                        </div>
+                         <div class="col-md-6">
+                            <span class="data-label">Waterfall Nearby?</span>
+                            <span class="data-value">{% if survey.waterfall_within_500m %}Yes{% else %}No{% endif %}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- C. Assessment -->
+            <div class="mb-5">
+                <div class="section-title"><i class="bi bi-clipboard-check"></i> Final Assessment</div>
+                <div class="card border-0 shadow-sm p-4 border-start border-4 {% if survey.recommend_tier_1 %}border-success{% else %}border-warning{% endif %}">
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <span class="data-label">Key Constraints</span>
+                            <p class="fw-bold text-dark">{{ survey.key_constraints }}</p>
+                        </div>
+                        <div class="col-12 d-flex align-items-center justify-content-between pt-3 border-top">
+                            <span class="text-muted">Recommendation for Tier-1 Detailed Study:</span>
+                            {% if survey.recommend_tier_1 %}
+                                <span class="badge bg-success fs-6"><i class="bi bi-check-lg me-1"></i> Recommended</span>
+                            {% else %}
+                                <span class="badge bg-secondary fs-6">Not Recommended</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- RIGHT COLUMN: METADATA & MAP -->
+        <div class="col-lg-4">
+            
+            <!-- Metadata Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-dark text-white fw-bold py-3">
+                    <i class="bi bi-info-circle me-2"></i> Administrative Data
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                        <span class="text-muted small">Submitted By</span>
+                        <span class="fw-bold text-end">{{ survey.submitted_by.username }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                        <span class="text-muted small">Student Team</span>
+                        <span class="fw-bold text-end badge bg-light text-dark border">{{ survey.student_team_id }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                        <span class="text-muted small">Survey Date</span>
+                        <span class="fw-bold text-end">{{ survey.survey_date|date:"d M Y" }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                        <span class="text-muted small">PMT Name</span>
+                        <span class="fw-bold text-end">{{ survey.pmt_name }}</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Grid & Land -->
+            <div class="card border-0 shadow-sm p-3">
+                <h6 class="fw-bold text-muted text-uppercase small mb-3">Grid & Infrastructure</h6>
+                <div class="d-flex align-items-start mb-3">
+                    <i class="bi bi-tower text-warning fs-4 me-3"></i>
+                    <div>
+                        <span class="d-block fw-bold">{{ survey.voltage_level }} Line</span>
+                        <span class="text-muted small">Distance: {{ survey.nearest_kseb_line_km }} km</span>
+                    </div>
+                </div>
+                <div class="d-flex align-items-start mb-3">
+                    <i class="bi bi-tree text-success fs-4 me-3"></i>
+                    <div>
+                        <span class="d-block fw-bold">{{ survey.land_ownership }}</span>
+                        <span class="text-muted small">Ownership Status</span>
+                    </div>
+                </div>
+                <div class="d-flex align-items-start">
+                    <i class="bi bi-signpost-split text-primary fs-4 me-3"></i>
+                    <div>
+                        <span class="d-block fw-bold">{{ survey.distance_from_road_km }} km</span>
+                        <span class="text-muted small">From nearest road</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 4. GALLERY SECTION -->
+    <div class="mt-4">
+        <div class="section-title"><i class="bi bi-images"></i> Site Documentation</div>
+        <div class="row g-3">
+            <!-- Intake Photo -->
+            <div class="col-md-6 col-lg-3">
+                <div class="gallery-img-wrapper">
+                    {% if survey.photo_intake %}
+                        <img src="{{ survey.photo_intake.url }}" class="gallery-img" alt="Intake">
+                        <a href="{{ survey.photo_intake.url }}" target="_blank" class="img-caption stretched-link">
+                            <i class="bi bi-box-arrow-up-right me-1"></i> Intake Location
+                        </a>
+                    {% else %}
+                        <div class="d-flex align-items-center justify-content-center h-100 bg-light text-muted">
+                            <div class="text-center"><i class="bi bi-camera-fill fs-3"></i><br>No Intake Photo</div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            <!-- Powerhouse Photo -->
+            <div class="col-md-6 col-lg-3">
+                <div class="gallery-img-wrapper">
+                    {% if survey.photo_powerhouse %}
+                        <img src="{{ survey.photo_powerhouse.url }}" class="gallery-img" alt="Powerhouse">
+                        <a href="{{ survey.photo_powerhouse.url }}" target="_blank" class="img-caption stretched-link">
+                            <i class="bi bi-box-arrow-up-right me-1"></i> Powerhouse Area
+                        </a>
+                    {% else %}
+                        <div class="d-flex align-items-center justify-content-center h-100 bg-light text-muted">
+                            <div class="text-center"><i class="bi bi-camera-fill fs-3"></i><br>No PH Photo</div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            <!-- Upstream Photo -->
+            <div class="col-md-6 col-lg-3">
+                <div class="gallery-img-wrapper">
+                    {% if survey.photo_upstream %}
+                        <img src="{{ survey.photo_upstream.url }}" class="gallery-img" alt="Upstream">
+                        <a href="{{ survey.photo_upstream.url }}" target="_blank" class="img-caption stretched-link">
+                            <i class="bi bi-box-arrow-up-right me-1"></i> Upstream View
+                        </a>
+                    {% else %}
+                        <div class="d-flex align-items-center justify-content-center h-100 bg-light text-muted">
+                            <div class="text-center"><i class="bi bi-camera-fill fs-3"></i><br>No Upstream Photo</div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            <!-- Access Photo -->
+            <div class="col-md-6 col-lg-3">
+                <div class="gallery-img-wrapper">
+                    {% if survey.photo_access %}
+                        <img src="{{ survey.photo_access.url }}" class="gallery-img" alt="Access">
+                        <a href="{{ survey.photo_access.url }}" target="_blank" class="img-caption stretched-link">
+                            <i class="bi bi-box-arrow-up-right me-1"></i> Access Route
+                        </a>
+                    {% else %}
+                        <div class="d-flex align-items-center justify-content-center h-100 bg-light text-muted">
+                            <div class="text-center"><i class="bi bi-camera-fill fs-3"></i><br>No Access Photo</div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

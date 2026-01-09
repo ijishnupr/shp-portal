@@ -3,69 +3,250 @@
 
 {% block content %}
 <style>
-    /* Custom Styling for Login Page */
+    /* --- 1. SHARED ANIMATION SETTINGS --- */
+    :root {
+        --gradient-colors: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+    }
+
+    @keyframes gradientBG {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    @keyframes pulse-logo {
+        0% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.1); opacity: 0.8; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+
     body {
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-        height: 100vh;
+        margin: 0;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        background-color: #f4f6f8; /* Default desktop background */
+        overflow-x: hidden;
     }
-    .auth-container {
-        margin-top: 50px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        border-radius: 15px;
-        overflow: hidden;
-        background: white;
-    }
-    .auth-header {
-        background: #0d6efd; /* Bootstrap Primary Blue */
+
+    /* --- 2. SPLASH SCREEN (2 Seconds) --- */
+    #splash-screen {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: var(--gradient-colors);
+        background-size: 400% 400%;
+        animation: gradientBG 5s ease infinite;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
         color: white;
-        padding: 40px;
+        transition: opacity 0.8s ease-out, visibility 0.8s;
+    }
+
+    .splash-logo { font-size: 5rem; margin-bottom: 20px; animation: pulse-logo 2s infinite; }
+    .splash-text { font-size: 2rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; }
+    
+    /* Class to hide splash screen */
+    .fade-out { opacity: 0; visibility: hidden; }
+
+
+    /* --- 3. DESKTOP LAYOUT (Default) --- */
+    .login-wrapper {
+        min-height: 100vh;
         display: flex;
         align-items: center;
         justify-content: center;
+        padding: 20px;
+    }
+
+    .auth-card {
+        background: white;
+        width: 100%;
+        max-width: 1000px;
+        min-height: 600px;
+        border-radius: 24px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+        display: flex;
+        overflow: hidden;
+        opacity: 0; /* Hidden initially, revealed after splash */
+        transform: translateY(20px);
+        transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+
+    /* Show content animation class */
+    .content-visible { opacity: 1; transform: translateY(0); }
+
+    .form-side {
+        flex: 1;
+        padding: 60px;
+        display: flex;
         flex-direction: column;
+        justify-content: center;
     }
-    .auth-form {
+
+    /* THE DESKTOP RIGHT BOX GRADIENT */
+    .visual-side {
+        flex: 1;
+        background: var(--gradient-colors);
+        background-size: 400% 400%;
+        animation: gradientBG 10s ease infinite;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        text-align: center;
         padding: 40px;
+        position: relative;
     }
+
+    /* --- 4. MOBILE LAYOUT ("WalkWin" Style) --- */
+    @media (max-width: 991px) {
+        body {
+            /* Mobile Background is the Gradient */
+            background: var(--gradient-colors);
+            background-size: 400% 400%;
+            animation: gradientBG 10s ease infinite;
+        }
+
+        .login-wrapper {
+            padding: 0;
+            display: block; /* Stack vertically */
+            height: 100vh;
+            position: relative;
+        }
+
+        /* The Gradient Header Area */
+        .mobile-gradient-header {
+            height: 35vh; /* Top 35% is animation */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            flex-direction: column;
+        }
+
+        /* The White Card Sliding Up */
+        .auth-card {
+            width: 100%;
+            max-width: 100%;
+            border-radius: 30px 30px 0 0; /* Rounded Top Corners Only */
+            min-height: 65vh; /* Bottom 65% is form */
+            position: absolute;
+            bottom: 0;
+            margin: 0;
+            flex-direction: column;
+        }
+
+        .visual-side {
+            display: none; /* Hide the desktop right box on mobile */
+        }
+
+        .form-side {
+            padding: 40px 30px;
+            justify-content: flex-start; /* Align to top of white box */
+        }
+    }
+
+    /* Form Tweaks */
+    .btn-login {
+        background-color: #111;
+        color: white;
+        border-radius: 50px; /* Pill shape */
+        padding: 12px;
+        font-weight: 600;
+        width: 100%;
+        border: none;
+        margin-top: 15px;
+    }
+    .btn-login:hover { background-color: #333; }
 </style>
 
-<div class="row justify-content-center align-items-center h-100">
-    <div class="col-md-8 col-lg-6">
-        <div class="auth-container row">
-            
-            <!-- Left Side: Branding -->
-            <div class="col-md-5 auth-header d-none d-md-flex">
-                <h3 class="fw-bold">SHP Portal</h3>
-                <p class="text-center small mt-2">Small Hydropower Project Management System</p>
-                <div class="mt-4" style="font-size: 3rem;">⚡</div>
+<!-- 1. SPLASH SCREEN -->
+<div id="splash-screen">
+    <div class="splash-logo"><i class="bi bi-lightning-charge-fill"></i></div>
+    <div class="splash-text">SHP Portal</div>
+    <p class="mt-2 small opacity-75">Loading Secure Database...</p>
+</div>
+
+<!-- 2. MAIN CONTENT -->
+<div class="login-wrapper">
+
+    <!-- Mobile Top Header (Visible only on Mobile) -->
+    <div class="mobile-gradient-header d-lg-none">
+        <h1 class="fw-bold" style="font-size: 3rem;"><i class="bi bi-droplet-fill"></i></h1>
+        <h3 class="fw-bold">Welcome Back</h3>
+    </div>
+
+    <div class="auth-card" id="main-card">
+        
+        <!-- LEFT/BOTTOM: Login Form -->
+        <div class="form-side">
+            <div class="mb-4">
+                <h2 class="fw-bold text-dark">Log In</h2>
+                <p class="text-muted">Enter your credentials to access the SHP database.</p>
             </div>
 
-            <!-- Right Side: Form -->
-            <div class="col-md-7 auth-form">
-                <h3 class="fw-bold text-dark mb-4">Sign In</h3>
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} py-2 small">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+                {{ form|crispy }}
                 
-                <!-- Show Messages (Success/Error) -->
-                {% if messages %}
-                    {% for message in messages %}
-                        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-                    {% endfor %}
-                {% endif %}
-
-                <form method="post">
-                    {% csrf_token %}
-                    {{ form|crispy }}
-                    
-                    <div class="d-grid mt-4">
-                        <button type="submit" class="btn btn-primary btn-lg">Login</button>
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="remember">
+                        <label class="form-check-label small text-muted" for="remember">Remember me</label>
                     </div>
-                </form>
+                    <a href="#" class="small text-decoration-none fw-bold text-dark">Forgot Password?</a>
+                </div>
 
-                <div class="text-center mt-3">
-                    <small class="text-muted">Don't have an account?</small><br>
-                    <a href="{% url 'register' %}" class="fw-bold text-decoration-none">Create New Account</a>
+                <button type="submit" class="btn btn-login shadow-lg">Sign In</button>
+            </form>
+
+            <div class="text-center mt-4 pt-3 border-top">
+                <p class="small text-muted">Don't have an account?</p>
+                <a href="{% url 'register' %}" class="btn btn-outline-dark btn-sm rounded-pill px-4">Create Account</a>
+            </div>
+        </div>
+
+        <!-- RIGHT: Animated Gradient Box (Desktop Only) -->
+        <div class="visual-side d-none d-lg-flex">
+            <div>
+                <h1 style="font-size: 4rem;"><i class="bi bi-water"></i></h1>
+                <h2 class="fw-bold mt-3">SHP Portal</h2>
+                <p class="lead opacity-75">Kerala State Electricity Board<br>Reconnaissance Survey System</p>
+                <div class="mt-4 p-3 bg-white bg-opacity-25 rounded-3 backdrop-blur">
+                    <small class="fw-bold">Secure Access Only</small>
                 </div>
             </div>
         </div>
+
     </div>
 </div>
+
+<!-- 3. JAVASCRIPT ANIMATION LOGIC -->
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Run after 2 seconds (2000ms)
+        setTimeout(function() {
+            // 1. Fade out splash screen
+            const splash = document.getElementById('splash-screen');
+            splash.classList.add('fade-out');
+
+            // 2. Slide up the login card
+            const card = document.getElementById('main-card');
+            card.classList.add('content-visible');
+
+            // 3. Remove splash from DOM after transition (0.8s) to allow clicking
+            setTimeout(() => {
+                splash.style.display = 'none';
+            }, 800);
+
+        }, 1000); 
+    });
+</script>
 {% endblock %}
